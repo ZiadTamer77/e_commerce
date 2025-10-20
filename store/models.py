@@ -52,7 +52,7 @@ class Customer(models.Model):
         (MEMBERSHIP_SILVER, "Silver"),
         (MEMBERSHIP_GOLD, "Gold"),
     ]
-    membership = models.CharField(max_length=10, choices=MEMBERSHIP_CHOICES)
+
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True, blank=True)
     membership = models.CharField(
@@ -63,6 +63,9 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
+
+    class Meta:
+        permissions = [("view_history", "Can View History")]
 
 
 class Order(models.Model):
@@ -81,7 +84,8 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
     class Meta:
-        permissions = [('cancel_order', 'Can cancel order')]
+        permissions = [("cancel_order", "Can cancel order")]
+
 
 class Address(models.Model):
     street = models.CharField(max_length=255)
