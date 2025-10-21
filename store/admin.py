@@ -73,24 +73,24 @@ class CollectionAdmin(admin.ModelAdmin):
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
-    list_display = ["user__first_name", "user__last_name", "membership", "order_number"]
+    list_display = ["user__first_name", "user__last_name", "membership", "orders"]
     list_editable = ["membership"]
     list_per_page = 10
     list_select_related = ["user"]
-    search_fields = ["user__first_name__istartswith", "user__last_name__istartswith"]
     ordering = ["user__first_name", "user__last_name"]
+    search_fields = ["user__first_name__istartswith", "user__last_name__istartswith"]
 
-    @admin.display(ordering="order_number")
-    def order_number(self, customer):
+    @admin.display(ordering="order_count")
+    def orders(self, customer):
         url = (
             reverse("admin:store_order_changelist")
             + "?"
             + urlencode({"customer__id": str(customer.id)})
         )
-        return format_html("<a href = '{}'>{} Orders</a>", url, customer.order_number)
+        return format_html("<a href = '{}'>{} Orders</a>", url, customer.order_count)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(order_number=Count("order"))
+        return super().get_queryset(request).annotate(order_count=Count("order"))
 
 
 class OrderItemInline(admin.StackedInline):
@@ -111,4 +111,4 @@ class OrderAdmin(admin.ModelAdmin):
     list_select_related = ["customer"]
 
     def customer_name(self, order):
-        return f"{order.customer.first_name} {order.customer.last_name}"
+        return f"{order.customer.user.first_name} {order.customer.user.last_name}"
