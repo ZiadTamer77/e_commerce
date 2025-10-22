@@ -24,6 +24,7 @@ from .models import (
     CartItem,
     Customer,
     Order,
+    ProductImage,
 )
 from .serializer import (
     ProductSerializer,
@@ -37,6 +38,7 @@ from .serializer import (
     OrderSerializer,
     CreateOrderSerializer,
     UpdateOrderSerializer,
+    ProductImageSerializer,
 )
 from .filters import ProductFilter
 from .pagination import DefaultPagination
@@ -44,7 +46,7 @@ from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related("images").all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
@@ -62,6 +64,16 @@ class ProductViewSet(ModelViewSet):
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
         return super().destroy(request, *args, **kwargs)
+
+
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
+
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id=self.kwargs["product_pk"])
+
+    def get_serializer_context(self):
+        return {"product_id": self.kwargs["product_pk"]}
 
 
 class CollectionViewSet(ModelViewSet):
