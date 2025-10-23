@@ -98,9 +98,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "storefront3",
-        "HOST": "localhost",
+        "HOST": "127.0.0.1",
         "USER": "root",
         "PASSWORD": "Az051277",
+        "port": "3306",
     }
 }
 
@@ -171,4 +172,15 @@ AUTH_USER_MODEL = "core.User"
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("JWT",),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+
+CELERY_BROKER_URL = "redis://localhost:6379/1"
+
+CELERY_BEAT_SCHEDULE = {
+    "notify_customers": {
+        "task": "playground.tasks.notify_customers",
+        "schedule": 5,
+        "args": ["hello world"],
+    }
 }
