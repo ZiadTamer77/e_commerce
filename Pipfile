@@ -19,6 +19,11 @@ redis = "*"
 flower = "*"
 
 [dev-packages]
+pytest = "*"
+autopep8 = "*"
+pytest-django = "*"
+pytest-watch = "*"
+model-bakery = "*"
 
 [requires]
 python_version = "3.13"
