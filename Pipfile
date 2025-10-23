@@ -14,6 +14,9 @@ djoser = "*"
 djangorestframework-simplejwt = "*"
 pillow = "*"
 django-cors-headers = "*"
+django-template-mail = "*"
+django-templated-mail = "*"
+redis = "*"
 
 [dev-packages]
 
