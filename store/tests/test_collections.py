@@ -1,5 +1,5 @@
 from rest_framework import status
-from store.models import Collection
+from store.models import Collection, Product
 from model_bakery import baker
 import pytest
 
@@ -10,6 +10,14 @@ def create_collection(api_client):
         return api_client.post("/store/collections/", collection)
 
     return do_create_collection
+
+
+@pytest.fixture
+def delete_collection(api_client):
+    def do_delete_collection(collection):
+        return api_client.delete(f"/store/collections/{collection.id}/")
+
+    return do_delete_collection
 
 
 @pytest.mark.django_db
@@ -56,3 +64,40 @@ class TestRetrieveCollection:
             "title": collection.title,
             "products_count": 0,
         }
+
+
+@pytest.mark.django_db
+class TestDeleteCollection:
+    def test_delete_collection_with_products_returns_405(
+        self, auth_user, delete_collection
+    ):
+        auth_user(is_staff=True)
+        collection = baker.make(Collection)
+        baker.make(Product, collection=collection)
+
+        response = delete_collection(collection)
+
+        assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+
+    def test_if_user_is_not_admin_returns_403(self, auth_user, delete_collection):
+        auth_user()
+        collection = baker.make(Collection)
+
+        response = delete_collection(collection)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_if_user_is_anonymous_return_401(self, delete_collection):
+        collection = baker.make(Collection)
+
+        response = delete_collection(collection)
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_if_delete_works_returns_204(self, delete_collection, auth_user):
+        auth_user(is_staff=True)
+        collection = baker.make(Collection)
+
+        response = delete_collection(collection)
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT

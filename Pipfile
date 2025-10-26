@@ -24,6 +24,7 @@ autopep8 = "*"
 pytest-django = "*"
 pytest-watch = "*"
 model-bakery = "*"
+locust = "*"
 
 [requires]
 python_version = "3.13"
