@@ -39,6 +39,7 @@ from .serializer import (
     CreateOrderSerializer,
     UpdateOrderSerializer,
     ProductImageSerializer,
+    CreateCartSerializer,
 )
 from .filters import ProductFilter
 from .pagination import DefaultPagination
@@ -105,8 +106,16 @@ class ReviewViewSet(ModelViewSet):
 class CartViewSet(
     CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet
 ):
-    queryset = Cart.objects.prefetch_related("items__product").all()
-    serializer_class = CartSerializer
+    def get_queryset(self):
+        # Only prefetch when retrieving, not when creating
+        if self.action == "retrieve":
+            return Cart.objects.prefetch_related("items__product").all()
+        return Cart.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateCartSerializer
+        return CartSerializer
 
 
 class CartItemViewSet(ModelViewSet):

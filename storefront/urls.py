@@ -34,6 +34,8 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += debug_toolbar_urls() + static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    urlpatterns += (
+        debug_toolbar_urls()
+        + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        + [path("silk/", include("silk.urls", namespace="silk"))]
     )
