@@ -4,23 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('store', '0004_auto_20250819_1723'),
+        ("store", "0003_add_slug_to_product"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='collection',
-            options={'ordering': ['title']},
+            name="collection",
+            options={"ordering": ["title"]},
         ),
         migrations.AlterModelOptions(
-            name='product',
-            options={'ordering': ['title']},
+            name="product",
+            options={"ordering": ["title"]},
         ),
         migrations.AlterField(
-            model_name='product',
-            name='description',
+            model_name="product",
+            name="description",
             field=models.TextField(null=True),
         ),
     ]
