@@ -10,4 +10,4 @@ db.sqlite3
 *.log
 token
 /media/
-/static/
+/static/ 
