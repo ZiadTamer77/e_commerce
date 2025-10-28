@@ -168,13 +168,13 @@ SIMPLE_JWT = {
 
 
 
-CELERY_BEAT_SCHEDULE = {
-    "notify_customers": {
-        "task": "playground.tasks.notify_customers",
-        "schedule": 5,
-        "args": ["hello world"],
-    }
-}
+# CELERY_BEAT_SCHEDULE = {
+#     "notify_customers": {
+#         "task": "playground.tasks.notify_customers",
+#         "schedule": 5,
+#         "args": ["hello world"],
+#     }
+# }
 
 
 
