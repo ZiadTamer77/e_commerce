@@ -1,5 +1,9 @@
 from .common import *  # noqa: F403
 
+import sys
+
+if "tests" in sys.argv:
+    DEBUG = False
 
 DEBUG = True
 
