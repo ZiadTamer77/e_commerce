@@ -6,20 +6,34 @@ DEBUG = False
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 
-ALLOWED_HOSTS = ["zbuy-b8ec4d6bf62a.herokuapp.com"]
+ALLOWED_HOSTS = ["app.ziadco.com","localhost","127.0.0.1","0.0.0.0"]
 
-DATABASES = {"default": dj_database_url.config()}
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in ["debug_toolbar","silk"]]
 
-REDIS_URL = os.environ["REDISCLOUD_URL"]
+CSRF_TRUSTED_ORIGINS = ["https://app.ziadco.com"]
 
-CELERY_BROKER_URL = REDIS_URL
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
 }
+
+#REDIS_URL = os.environ["REDISCLOUD_URL"]
+
+#CELERY_BROKER_URL = REDIS_URL
+
+
+#CACHES = {
+#    "default": {
+#        "BACKEND": "django_redis.cache.RedisCache",
+#        "LOCATION": REDIS_URL,
+#        "OPTIONS": {
+#            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#        },
+#    }
+#}

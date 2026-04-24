@@ -1,20 +1,29 @@
 services:
   web:
     build: .
-    command: ./wait-for-it.sh mysql:3306 -- ./docker-entrypoint.sh
+    container_name: django-app
+    command: ./docker-entrypoint.sh
     ports:
       - 8000:8000
     depends_on:
       # - redis
       - mysql
     restart: on-failure
+    env_file:
+      - .env
+    environment:
+      - SECRET_KEY=ILOVELOLO
+      - DJANGO_SETTINGS_MODULE=storefront.settings.prod
     volumes:
-      - .:/app
+      - ./static:/app/static
   mysql:
     image: mysql:8.0
+    container_name: mysql_db
     ports:
       - 3306:3306
     restart: always
+    env_file:
+      - .env
     environment:
       - MYSQL_DATABASE=storefront3
       - MYSQL_ROOT_PASSWORD=Az051277
@@ -60,16 +69,5 @@ services:
   #     - CELERY_BACKEND=redis://redis:6379/0
   #   ports:
   #     - 5555:5555
-  tests:
-    build: .
-    command: ./wait-for-it.sh mysql:3306 -- ptw
-    depends_on:
-      # - redis
-      - mysql
-    tty: true
-    volumes:
-      - .:/app
 volumes:
   mysqldata:
-  pgdata:
-  redisdata:
