@@ -2,10 +2,7 @@ from .common import *  # noqa: F403
 
 import sys
 
-if "tests" in sys.argv:
-    DEBUG = False
-
-DEBUG = True
+DEBUG = "tests" not in sys.argv
 
 SECRET_KEY = "django-insecure-gjwjbj(%35n9(xd9evo5e2*tx*d*p@2n$91th^vg&1qn!q4(b+"
 
