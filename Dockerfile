@@ -1,24 +1,36 @@
-FROM python:3.13
+FROM python:3.13 AS build-stage
 
+
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+
+
 WORKDIR /app
 
-# Required to install mysqlclient with Pip
-RUN apt-get update \
-  && apt-get install python3-dev default-libmysqlclient-dev gcc -y
+RUN pip install --upgrade pip && pip install pipenv
+COPY Pipfile Pipfile.lock ./
+RUN pipenv install --system --deploy
 
-# Install pipenv
-RUN pip install --upgrade pip 
-RUN pip install pipenv
+COPY docker-entrypoint.sh wait-for-it.sh ./
+RUN chmod +x ./docker-entrypoint.sh ./wait-for-it.sh
 
-# Install application dependencies
-COPY Pipfile Pipfile.lock /app/
-# We use the --system flag so packages are installed into the system python
-# and not into a virtualenv. Docker containers don't need virtual environments. 
-RUN pipenv install --system --dev
+FROM python:alpine3.23 AS runtime-stage
 
-# Copy the application files into the image
-COPY . /app/
 
-# Expose port 8000 on the container
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+
+WORKDIR /app
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+
+COPY --from=build-stage --chown=appuser:appgroup /app /app
+COPY --from=build-stage --chown=appuser:appgroup /usr/local/lib/python3.13 /usr/local/lib/python3.13
+COPY --from=build-stage --chown=appuser:appgroup /usr/local/bin /usr/local/bin
+
+
+USER appuser
+
 EXPOSE 8000
+ENTRYPOINT ["./docker-entrypoint.sh"]
