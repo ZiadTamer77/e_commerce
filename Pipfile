@@ -26,11 +26,11 @@ django-silk = "*"
 [dev-packages]
 pytest = "*"
 autopep8 = "*"
-pytest-django = "*"
 pytest-watch = "*"
 model-bakery = "*"
 locust = "*"
 django-silk = "*"
+pytest-django = "*"
 
 [requires]
 python_version = "3.13"

@@ -15,6 +15,14 @@ MIDDLEWARE = [
     ]
 ]
 
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
+}
+
 # Remove debug toolbar and silk from installed apps for tests
 INSTALLED_APPS = [
     app

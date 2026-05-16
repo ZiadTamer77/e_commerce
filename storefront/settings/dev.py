@@ -21,7 +21,7 @@ DATABASES = {
         "HOST": "mysql",
         "USER": "root",
         "PASSWORD": "Az051277",
-        "port": "3306",
+        "PORT": "3306",
     }
 }
 
