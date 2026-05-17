@@ -12,6 +12,9 @@ python manage.py migrate
 echo "Collecting Statics"
 python manage.py collectstatic --noinput
 
+echo "Creating superuser"
+python manage.py create_superuser_if_none
+
 # Start server
 echo "Starting server"
 exec gunicorn storefront.wsgi:application --bind 0.0.0.0:8000
