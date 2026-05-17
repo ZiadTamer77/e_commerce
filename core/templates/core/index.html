@@ -1,19 +1,834 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{%static 'core/styles.css'%}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storefront API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #0f0f1a;
+    --grid: #13131f;
+    --border: rgba(255,255,255,0.06);
+    --border-hover: rgba(255,255,255,0.14);
+    --text: #e2e2f0;
+    --muted: #5a5a7a;
+    --dim: #32324a;
+
+    --get:    #00e5a0;
+    --post:   #3d9eff;
+    --put:    #f0a500;
+    --patch:  #c97af0;
+    --delete: #ff5555;
+    --admin:  #ff6b35;
+
+    --get-bg:    rgba(0, 229, 160, 0.07);
+    --post-bg:   rgba(61, 158, 255, 0.07);
+    --put-bg:    rgba(240, 165, 0, 0.07);
+    --patch-bg:  rgba(201, 122, 240, 0.07);
+    --delete-bg: rgba(255, 85, 85, 0.07);
+    --admin-bg:  rgba(255, 107, 53, 0.07);
+
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  html { background: var(--bg); color: var(--text); font-family: var(--sans); }
+  body { min-height: 100vh; position: relative; overflow-x: hidden; }
+
+  /* Dot grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, var(--dim) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ambient glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0,229,160,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  /* ── Header ── */
+  header {
+    margin-bottom: 3.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .api-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--get);
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  h1 span { color: var(--get); }
+
+  .version-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .version-badge {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+
+  .v-django { color: #44b78b; border-color: rgba(68,183,139,0.3); background: rgba(68,183,139,0.07); }
+  .v-drf    { color: #a29af0; border-color: rgba(162,154,240,0.3); background: rgba(162,154,240,0.07); }
+  .v-jwt    { color: #f0c040; border-color: rgba(240,192,64,0.3); background: rgba(240,192,64,0.07); }
+
+  .base-url {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: var(--grid);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .base-url::before { content: '⬡'; color: var(--get); font-size: 0.8rem; }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    margin-top: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Endpoint card ── */
+  .endpoint-group { margin-bottom: 0.4rem; }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .endpoint-group.collapsed .group-header {
+    border-radius: 6px;
+  }
+
+  .group-header:hover {
+    border-color: var(--border-hover);
+    background: var(--grid);
+  }
+
+  .group-icon {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    width: 14px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+
+  .endpoint-group:not(.collapsed) .group-icon {
+    transform: rotate(90deg);
+  }
+
+  .group-path {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .group-path strong { color: var(--get); font-weight: 500; }
+
+  .group-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .group-methods { display: flex; gap: 0.3rem; }
+
+  .method-pill {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .GET    { background: var(--get-bg);    color: var(--get);    border: 1px solid rgba(0,229,160,0.2); }
+  .POST   { background: var(--post-bg);   color: var(--post);   border: 1px solid rgba(61,158,255,0.2); }
+  .PUT    { background: var(--put-bg);    color: var(--put);    border: 1px solid rgba(240,165,0,0.2); }
+  .PATCH  { background: var(--patch-bg);  color: var(--patch);  border: 1px solid rgba(201,122,240,0.2); }
+  .DELETE { background: var(--delete-bg); color: var(--delete); border: 1px solid rgba(255,85,85,0.2); }
+  .ADMIN  { background: var(--admin-bg);  color: var(--admin);  border: 1px solid rgba(255,107,53,0.2); }
+
+  /* Endpoint rows inside a group */
+  .endpoint-list {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+    display: block;
+  }
+
+  .collapsed .endpoint-list { display: none; }
+
+  .endpoint-row {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+    cursor: pointer;
+  }
+
+  .endpoint-row:last-child { border-bottom: none; }
+  .endpoint-row:hover { background: var(--grid); }
+
+  .method-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+
+  .endpoint-info { }
+  .endpoint-path {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+  .endpoint-path .param { color: var(--get); opacity: 0.8; }
+  .endpoint-desc {
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+  }
+
+  .endpoint-action {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--dim);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .endpoint-row:hover .endpoint-action { opacity: 1; }
+
+  /* ── Auth section special ── */
+  .auth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+
+  @media (max-width: 600px) {
+    .auth-grid { grid-template-columns: 1fr; }
+    .group-desc { display: none; }
+    h1 { font-size: 1.4rem; }
+  }
+
+  .auth-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: pointer;
+  }
+
+  .auth-card:hover {
+    border-color: var(--border-hover);
+    background: var(--grid);
+  }
+
+  .auth-icon {
+    font-size: 1.1rem;
+    opacity: 0.7;
+  }
+
+  .auth-card-label {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text);
+    margin-bottom: 0.1rem;
+  }
+
+  .auth-card-desc { font-size: 0.72rem; color: var(--muted); }
+
+  /* ── Admin card ── */
+  .admin-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: pointer;
+    margin-bottom: 0.4rem;
+  }
+
+  .admin-card:hover {
+    border-color: rgba(255,107,53,0.3);
+    background: rgba(255,107,53,0.04);
+  }
+
+  .admin-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--admin);
+    box-shadow: 0 0 8px var(--admin);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .admin-label {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .admin-arrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--admin);
+  }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-left {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .footer-left span { color: var(--get); }
+
+  .footer-right { display: flex; gap: 0.5rem; }
+
+  .footer-link {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .footer-link:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* Entrance animation */
+  .wrap > * {
+    animation: fadeUp 0.4s ease both;
+  }
+  header { animation-delay: 0s; }
+  .section-label:nth-of-type(1) { animation-delay: 0.05s; }
+  .endpoint-group:nth-child(1) { animation-delay: 0.08s; }
+  .endpoint-group:nth-child(2) { animation-delay: 0.11s; }
+  .endpoint-group:nth-child(3) { animation-delay: 0.14s; }
+  .endpoint-group:nth-child(4) { animation-delay: 0.17s; }
+  .endpoint-group:nth-child(5) { animation-delay: 0.20s; }
+  footer { animation-delay: 0.25s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
 </head>
-
 <body>
-    <div class="home-page">
-        <img src="{%static 'core/logo.jpg'%}" alt="Logo" class='logo'>
-    </div>
-</body>
+<div class="wrap">
 
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="api-label">REST API Explorer</div>
+        <h1>Storefront <span>API</span></h1>
+        <div class="version-row">
+          <span class="version-badge v-django">Django 5.2</span>
+          <span class="version-badge v-drf">DRF</span>
+          <span class="version-badge v-jwt">JWT Auth</span>
+        </div>
+      </div>
+      <div class="base-url">http://localhost:8000</div>
+    </div>
+  </header>
+
+  <!-- ── Admin ── -->
+  <div class="section-label">admin</div>
+
+  <a class="admin-card" href="/admin/">
+    <div class="admin-dot"></div>
+    <div>
+      <div class="admin-label">/admin/</div>
+      <div class="auth-card-desc">Django admin panel — manage users, products, orders, collections</div>
+    </div>
+    <span class="admin-arrow">→</span>
+  </a>
+
+  <!-- ── Auth ── -->
+  <div class="section-label">authentication</div>
+
+  <div class="auth-grid">
+    <a class="auth-card" href="/auth/users/">
+      <div class="auth-icon">👤</div>
+      <div>
+        <div class="auth-card-label">/auth/users/</div>
+        <div class="auth-card-desc">Register · profile · password management</div>
+      </div>
+    </a>
+    <a class="auth-card" href="/auth/jwt/create/">
+      <div class="auth-icon">🔑</div>
+      <div>
+        <div class="auth-card-label">/auth/jwt/</div>
+        <div class="auth-card-desc">Create · refresh · verify JWT tokens</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- ── Store ── -->
+  <div class="section-label">store endpoints</div>
+
+  <!-- Products -->
+  <div class="endpoint-group" id="g-products">
+    <div class="group-header" onclick="toggleGroup('g-products')">
+      <span class="group-icon">▶</span>
+      <span class="group-path">/store/<strong>products</strong>/</span>
+      <span class="group-desc">Catalog with filtering, search, ordering</span>
+      <div class="group-methods">
+        <span class="method-pill GET">GET</span>
+        <span class="method-pill POST">POST</span>
+        <span class="method-pill PUT">PUT</span>
+        <span class="method-pill PATCH">PATCH</span>
+        <span class="method-pill DELETE">DELETE</span>
+      </div>
+    </div>
+    <div class="endpoint-list">
+      <a class="endpoint-row" href="/store/products/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/</div>
+          <div class="endpoint-desc">List all products — supports ?collection_id=, ?unit_price__gt=, ?search=, ?ordering=</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/">
+        <span class="method-badge POST">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/</div>
+          <div class="endpoint-desc">Create a product — admin only</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/1/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Retrieve a single product with images</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/1/">
+        <span class="method-badge PUT">PUT</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Full update — admin only</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/1/">
+        <span class="method-badge PATCH">PATCH</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Partial update — admin only</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/1/">
+        <span class="method-badge DELETE">DELETE</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Delete product — blocked if in existing orders</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/1/images/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/<span class="param">{id}</span>/images/</div>
+          <div class="endpoint-desc">Product image gallery</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/products/1/reviews/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/products/<span class="param">{id}</span>/reviews/</div>
+          <div class="endpoint-desc">List and create reviews for a product</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Collections -->
+  <div class="endpoint-group collapsed" id="g-collections">
+    <div class="group-header" onclick="toggleGroup('g-collections')">
+      <span class="group-icon">▶</span>
+      <span class="group-path">/store/<strong>collections</strong>/</span>
+      <span class="group-desc">Product collection groupings</span>
+      <div class="group-methods">
+        <span class="method-pill GET">GET</span>
+        <span class="method-pill POST">POST</span>
+        <span class="method-pill DELETE">DELETE</span>
+      </div>
+    </div>
+    <div class="endpoint-list">
+      <a class="endpoint-row" href="/store/collections/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/collections/</div>
+          <div class="endpoint-desc">List all collections with product count</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/collections/">
+        <span class="method-badge POST">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/collections/</div>
+          <div class="endpoint-desc">Create a collection — admin only</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/collections/1/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/collections/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Retrieve a single collection</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/collections/1/">
+        <span class="method-badge DELETE">DELETE</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/collections/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Delete — blocked if collection has products</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Carts -->
+  <div class="endpoint-group collapsed" id="g-carts">
+    <div class="group-header" onclick="toggleGroup('g-carts')">
+      <span class="group-icon">▶</span>
+      <span class="group-path">/store/<strong>carts</strong>/</span>
+      <span class="group-desc">UUID-based shopping carts</span>
+      <div class="group-methods">
+        <span class="method-pill GET">GET</span>
+        <span class="method-pill POST">POST</span>
+        <span class="method-pill PATCH">PATCH</span>
+        <span class="method-pill DELETE">DELETE</span>
+      </div>
+    </div>
+    <div class="endpoint-list">
+      <a class="endpoint-row" href="/store/carts/">
+        <span class="method-badge POST">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/carts/</div>
+          <div class="endpoint-desc">Create a new cart — returns a UUID</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/carts/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/carts/<span class="param">{uuid}</span>/</div>
+          <div class="endpoint-desc">Retrieve cart with items and total price</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/carts/">
+        <span class="method-badge DELETE">DELETE</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/carts/<span class="param">{uuid}</span>/</div>
+          <div class="endpoint-desc">Delete a cart</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/carts/">
+        <span class="method-badge POST">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/carts/<span class="param">{uuid}</span>/items/</div>
+          <div class="endpoint-desc">Add item to cart — increments quantity if already present</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/carts/">
+        <span class="method-badge PATCH">PATCH</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/carts/<span class="param">{uuid}</span>/items/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Update item quantity</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/carts/">
+        <span class="method-badge DELETE">DELETE</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/carts/<span class="param">{uuid}</span>/items/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Remove item from cart</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Customers -->
+  <div class="endpoint-group collapsed" id="g-customers">
+    <div class="group-header" onclick="toggleGroup('g-customers')">
+      <span class="group-icon">▶</span>
+      <span class="group-path">/store/<strong>customers</strong>/</span>
+      <span class="group-desc">Customer profiles linked to auth users</span>
+      <div class="group-methods">
+        <span class="method-pill GET">GET</span>
+        <span class="method-pill PUT">PUT</span>
+      </div>
+    </div>
+    <div class="endpoint-list">
+      <a class="endpoint-row" href="/store/customers/me/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/customers/me/</div>
+          <div class="endpoint-desc">Get your own customer profile — requires JWT</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/customers/me/">
+        <span class="method-badge PUT">PUT</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/customers/me/</div>
+          <div class="endpoint-desc">Update phone, birth date, membership — requires JWT</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/customers/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/customers/</div>
+          <div class="endpoint-desc">List all customers — admin only</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/customers/1/history/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/customers/<span class="param">{id}</span>/history/</div>
+          <div class="endpoint-desc">View order history — requires view_history permission</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Orders -->
+  <div class="endpoint-group collapsed" id="g-orders">
+    <div class="group-header" onclick="toggleGroup('g-orders')">
+      <span class="group-icon">▶</span>
+      <span class="group-path">/store/<strong>orders</strong>/</span>
+      <span class="group-desc">Order placement and management</span>
+      <div class="group-methods">
+        <span class="method-pill GET">GET</span>
+        <span class="method-pill POST">POST</span>
+        <span class="method-pill PATCH">PATCH</span>
+        <span class="method-pill DELETE">DELETE</span>
+      </div>
+    </div>
+    <div class="endpoint-list">
+      <a class="endpoint-row" href="/store/orders/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/orders/</div>
+          <div class="endpoint-desc">List orders — own orders for users, all orders for admin</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/orders/">
+        <span class="method-badge POST">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/orders/</div>
+          <div class="endpoint-desc">Create order from cart — requires JWT, deletes cart on success</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/orders/">
+        <span class="method-badge PATCH">PATCH</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/orders/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Update payment status — admin only</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+      <a class="endpoint-row" href="/store/orders/">
+        <span class="method-badge DELETE">DELETE</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/store/orders/<span class="param">{id}</span>/</div>
+          <div class="endpoint-desc">Delete order — admin only, requires cancel_order permission</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Playground -->
+  <div class="section-label">dev</div>
+
+  <div class="endpoint-group collapsed" id="g-playground">
+    <div class="group-header" onclick="toggleGroup('g-playground')">
+      <span class="group-icon">▶</span>
+      <span class="group-path">/playground/<strong>hello</strong>/</span>
+      <span class="group-desc">Test endpoint — hits httpbin, returns template</span>
+      <div class="group-methods">
+        <span class="method-pill GET">GET</span>
+      </div>
+    </div>
+    <div class="endpoint-list">
+      <a class="endpoint-row" href="/playground/hello/">
+        <span class="method-badge GET">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/playground/hello/</div>
+          <div class="endpoint-desc">Renders hello.html — useful for checking template rendering and logging</div>
+        </div>
+        <span class="endpoint-action">open ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">
+      storefront-api // built with <span>Django</span> + DRF
+    </div>
+    <div class="footer-right">
+      <a class="footer-link" href="/admin/">admin</a>
+      <a class="footer-link" href="/auth/users/">auth</a>
+      <a class="footer-link" href="/store/products/">products</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  function toggleGroup(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+</script>
+</body>
 </html>
