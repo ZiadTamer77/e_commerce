@@ -6,7 +6,7 @@ DEBUG = False
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 
-ALLOWED_HOSTS = ["app.ziadco.com", "localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = ["app.ziadco.com", "localhost", "127.0.0.1", "*"]
 
 INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in ["debug_toolbar", "silk"]]
 
