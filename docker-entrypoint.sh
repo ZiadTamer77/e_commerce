@@ -1,8 +1,9 @@
 #!/bin/bash
 
-#wait for sql 
+# wait for db
 echo "Waiting for MySQL"
-./wait-for-it.sh mysql:3306 --timeout=30 --strict -- echo "MY SQL is up"
+./wait-for-it.sh $DB_HOST:$DB_PORT --timeout=30 --strict -- echo "MySQL is up"
+
 # Apply database migrations
 echo "Apply database migrations"
 python manage.py migrate
