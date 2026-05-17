@@ -1,8 +1,9 @@
 {
+    "family": "ecommerce",
     "containerDefinitions": [
         {
             "name": "storefront",
-            "image": "django/ecommerce",
+            "image": "514454346265.dkr.ecr.eu-north-1.amazonaws.com/django/ecommerce:84e8de9d59d875baa2f928104df0046fa1283813",
             "cpu": 0,
             "portMappings": [
                 {
@@ -23,7 +24,6 @@
             ],
             "mountPoints": [],
             "volumesFrom": [],
-            "ulimits": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -35,69 +35,20 @@
                 "secretOptions": []
             },
             "systemControls": []
-        },
-        {
-            "name": "sqldb",
-            "image": "mysql:8.0",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "containerPort": 3306,
-                    "hostPort": 3306,
-                    "protocol": "tcp",
-                    "name": "sqldb-3306-tcp"
-                }
-            ],
-            "essential": false,
-            "environment": [],
-            "environmentFiles": [
-                {
-                    "value": "arn:aws:s3:::envdjango/.env",
-                    "type": "s3"
-                }
-            ],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "systemControls": []
         }
     ],
-    "family": "ecommerce",
     "taskRoleArn": "arn:aws:iam::514454346265:role/service-role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::514454346265:role/service-role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [],
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "ecs.capability.env-files.s3"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.task-iam-role"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
-        }
-    ],
     "placementConstraints": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "3072",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
-    },
-    "cpu": "1024",
-    "memory": "3072",
-    "tags": []
+    }
 }
