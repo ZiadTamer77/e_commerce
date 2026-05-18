@@ -11,3 +11,4 @@ store/tests/
 *.log
 general.log
 .DS_Store
+terraform/
