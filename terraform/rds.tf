@@ -28,11 +28,9 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [aws_security_group.rds.id]
   publicly_accessible    = false
 
-  backup_retention_period = 7
-  backup_window           = "03:00-04:00"
-  maintenance_window      = "sun:04:00-sun:05:00"
 
-  enabled_cloudwatch_logs_exports = ["mysql", "upgrade"]
+
+  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
 
   skip_final_snapshot       = true
   final_snapshot_identifier = "${var.project_name}-${var.environment}-final-snapshot-${formatdate("YYYYMMDDhhmmss", timestamp())}"
