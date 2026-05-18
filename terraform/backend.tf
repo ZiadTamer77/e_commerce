@@ -14,11 +14,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "terra-django-bucket"
-    key            = "django-app/terraform.tfstate"
-    region         = "eu-north-1"
-    encrypt        = true
-    dynamodb_table = "terraform-state-lock"
+    bucket       = "terra-django-bucket"
+    key          = "django-app/terraform.tfstate"
+    region       = "eu-north-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }
 

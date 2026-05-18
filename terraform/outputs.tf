@@ -60,5 +60,5 @@ output "certificate_arn" {
 
 output "DNS_record" {
   description = "Cloudflare DNS record"
-  value       = var.domain_name != "" ? cloudflare_dns_record.app.hostname : "N/A - No Cloudflare DNS record created"
+  value       = var.domain_name != "" ? cloudflare_dns_record.app.name : "N/A - No Cloudflare DNS record created"
 }
