@@ -16,7 +16,7 @@ RUN apt-get update \
   default-libmysqlclient-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip && pip install pipenv
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir pipenv
 COPY Pipfile Pipfile.lock ./
 RUN pipenv install --system --deploy
 
