@@ -28,6 +28,10 @@ jobs:
       
     - name : lint Dockerfile
       uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+        config: .hadolint.yaml
+        failure-threshold: "error"
       
     - name: Run Tests
       run: pipenv run pytest
