@@ -1,6 +1,5 @@
 import os
-import dj_database_url
-from .common import *  # noqa: F403
+from .common import *
 
 DEBUG = False
 
