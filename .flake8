@@ -11,3 +11,4 @@ per-file-ignores =
     */admin.py:F401
     */models.py:F401
     */views.py:F401
+    storefront/settings/prod.py:F405,F403

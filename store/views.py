@@ -55,13 +55,12 @@ class ProductViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     search_fields = ["title", "description"]
     ordering_fields = ["unit_price", "last_update"]
+    error = "Product can't be deleted because it is associated with an order item."
 
     def destroy(self, request, *args, **kwargs):
         if OrderItem.objects.filter(product_id=kwargs["pk"]).count() > 0:
             return Response(
-                {
-                    "error": "Product can't be deleted because it is associated with an order."
-                },
+                {"error": self.error},
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
         return super().destroy(request, *args, **kwargs)
@@ -81,13 +80,13 @@ class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count("products")).all()
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
+    error = "Collection can't be deleted because it \
+        is associated with one or more products."
 
     def destroy(self, request, *args, **kwargs):
         if Product.objects.filter(collection_id=kwargs["pk"]).count() > 0:
             return Response(
-                {
-                    "error": "Collection can't be deleted because it includes one or more products."
-                },
+                {"error": self.error},
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
         return super().destroy(request, *args, **kwargs)
