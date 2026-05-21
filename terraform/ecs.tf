@@ -133,11 +133,31 @@ resource "aws_ecs_task_definition" "main" {
       },
       {
         name  = "DB_LINK"
-        value = "mysql://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}"
+        value = "mysql://${var.DB_USER}:${var.DB_PASSWORD}@${aws_db_instance.main.endpoint}/${var.DB_NAME}"
       },
       {
         name  = "ENVIRONMENT"
         value = var.environment
+      },
+      {
+        name  = "DB_PORT"
+        value = var.DB_PORT
+      },
+      {
+        name  = "DB_HOST"
+        value = aws_db_instance.main.address
+      },
+      {
+        name  = "DB_NAME"
+        value = var.DB_NAME
+      },
+      {
+        name  = "DB_USER"
+        value = var.DB_USER
+      },
+      {
+        name  = "DB_PASSWORD"
+        value = var.DB_PASSWORD
       },
       {
         name  = "SECRET_KEY"

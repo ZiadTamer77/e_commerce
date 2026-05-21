@@ -34,19 +34,27 @@ variable "container_port" {
   default     = 8000
 }
 
-variable "db_name" {
+variable "DB_NAME" {
   description = "Database name"
   type        = string
   default     = "storefront3"
 }
 
-variable "db_username" {
-  description = "Database master username"
+variable "DB_USER" {
+  description = "Database username"
   type        = string
-  sensitive   = true
+  default     = "storefront_user"
 }
 
-variable "db_password" {
+variable "DB_PORT" {
+  description = "Database port"
+  type        = number
+  default     = 3306
+}
+
+
+
+variable "DB_PASSWORD" {
   description = "Database master password"
   type        = string
   sensitive   = true
@@ -122,3 +130,5 @@ variable "secret_key" {
   sensitive   = true
   default     = ""
 }
+
+
