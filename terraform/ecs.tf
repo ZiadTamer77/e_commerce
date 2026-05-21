@@ -128,6 +128,10 @@ resource "aws_ecs_task_definition" "main" {
 
     environment = [
       {
+        name  = "DJANGO_SETTINGS_MODULE"
+        value = "storefront.settings.prod"
+      },
+      {
         name  = "DB_LINK"
         value = "mysql://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}"
       },
@@ -147,7 +151,7 @@ resource "aws_ecs_task_definition" "main" {
     }
 
     healthCheck = {
-      command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}${var.health_check_path} || exit 1"]
+      command     = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${var.container_port}${var.health_check_path}')\" || exit 1"]
       interval    = 30
       timeout     = 5
       retries     = 3
