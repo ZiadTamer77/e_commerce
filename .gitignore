@@ -10,9 +10,6 @@ db.sqlite3
 *.log
 token
 /media/
-<<<<<<< Updated upstream
-/static/ 
-=======
 /static/ 
 terraform/.terraform/
 terraform/terraform.tfvars
@@ -21,4 +18,3 @@ terraform/tfplan
 *.tfstate
 *.tfstate.backup
 *.tfstate.lock.info
->>>>>>> Stashed changes
