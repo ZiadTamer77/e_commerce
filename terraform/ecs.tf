@@ -138,6 +138,10 @@ resource "aws_ecs_task_definition" "main" {
       {
         name  = "ENVIRONMENT"
         value = var.environment
+      },
+      {
+        name  = "SECRET_KEY"
+        value = var.secret_key
       }
     ]
 

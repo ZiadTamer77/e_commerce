@@ -116,3 +116,9 @@ variable "cloudflare_account_id" {
   default     = ""
 }
 
+variable "secret_key" {
+  description = "Django secret key"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
