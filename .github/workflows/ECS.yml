@@ -33,7 +33,6 @@ on:
 env:
   AWS_REGION: eu-north-1                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: ecommerce-app-production 
-  ECR_REGISTRY: 514454346265.dkr.ecr.eu-north-1.amazonaws.com          # set this to your Amazon ECR repository name
   ECS_SERVICE: ecommerce-app-production-service               # set this to your Amazon ECS service name
   ECS_CLUSTER: ecommerce-app-production-cluster                 # set this to your Amazon ECS cluster name
 
@@ -70,8 +69,9 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build \
-        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest . \
-        -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . 
+        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest  \
+        -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+         . 
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
