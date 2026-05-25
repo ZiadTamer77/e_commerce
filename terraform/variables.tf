@@ -81,7 +81,7 @@ variable "desired_count" {
 variable "health_check_path" {
   description = "Health check endpoint"
   type        = string
-  default     = "/"
+  default     = "/health/"
 }
 
 variable "domain_name" {
