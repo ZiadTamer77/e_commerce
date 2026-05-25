@@ -18,3 +18,4 @@ terraform/tfplan
 *.tfstate
 *.tfstate.backup
 *.tfstate.lock.info
+*.png
