@@ -85,6 +85,7 @@ jobs:
       TF_VAR_SUPERUSER_NAME:         ${{ secrets.TF_VAR_SUPERUSER_NAME }}
       TF_VAR_SUPERUSER_EMAIL:        ${{ secrets.TF_VAR_SUPERUSER_EMAIL }}
       TF_VAR_SUPERUSER_PASSWORD:     ${{ secrets.TF_VAR_SUPERUSER_PASSWORD }}
+      TF_VAR_environment:            production
     steps:
       - uses: actions/checkout@v4
 
