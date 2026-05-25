@@ -162,7 +162,20 @@ resource "aws_ecs_task_definition" "main" {
       {
         name  = "SECRET_KEY"
         value = var.secret_key
+      },
+      {
+        name  = "SUPERUSER_NAME"
+        value = var.SUPERUSER_NAME
+      },
+      {
+        name  = "SUPERUSER_EMAIL"
+        value = var.SUPERUSER_EMAIL
+      },
+      {
+        name  = "SUPERUSER_PASSWORD"
+        value = var.SUPERUSER_PASSWORD
       }
+
     ]
 
     logConfiguration = {
