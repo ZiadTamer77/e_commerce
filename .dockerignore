@@ -5,6 +5,7 @@ __pycache__
 *.pyc
 *.pyo
 *.pyd
+*.png
 .pytest_cache
 tests/
 store/tests/
