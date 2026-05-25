@@ -48,8 +48,8 @@ variable "DB_USER" {
 
 variable "DB_PORT" {
   description = "Database port"
-  type        = number
-  default     = 3306
+  type        = string
+  default     = "3306"
 }
 
 
