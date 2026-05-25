@@ -114,8 +114,16 @@ jobs:
       - name: Terraform plan
         id: plan
         working-directory: terraform
-        run: terraform plan -no-color -input=false 2>&1 | tee /tmp/tfplan.txt
+        run: terraform plan -out=tfplan -no-color -input=false 2>&1 | tee /tmp/tfplan.txt
         continue-on-error: true   # we post the result before failing
+
+      - name: Upload plan artifact
+        if: steps.plan.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+          retention-days: 1  # plan is only valid until the next run
 
       - name: Post plan as PR comment
         if: github.event_name == 'pull_request'
@@ -185,6 +193,7 @@ jobs:
       TF_VAR_SUPERUSER_NAME:         ${{ secrets.TF_VAR_SUPERUSER_NAME }}
       TF_VAR_SUPERUSER_EMAIL:        ${{ secrets.TF_VAR_SUPERUSER_EMAIL }}
       TF_VAR_SUPERUSER_PASSWORD:     ${{ secrets.TF_VAR_SUPERUSER_PASSWORD }}
+      TF_VAR_environment:            production
     steps:
       - uses: actions/checkout@v4
 
@@ -202,9 +211,15 @@ jobs:
         working-directory: terraform
         run: terraform init -input=false
 
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/
+
       - name: Terraform apply
         working-directory: terraform
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -input=false tfplan
 
   # ── 4. Deploy — push to main only, after CI + terraform (if it ran) ────────
   deploy:
