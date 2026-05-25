@@ -72,7 +72,7 @@ jobs:
     name: Terraform plan
     needs: [ci, changes]
     outputs:
-      has_changes: ${{ steps.plan.outputs.has_changes }}
+      has_changes: ${{ steps.plan_check.outputs.has_changes }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -115,18 +115,19 @@ jobs:
       - name: Terraform plan
         id: plan
         working-directory: terraform
+        run: terraform plan -out=tfplan -no-color -input=false -detailed-exitcode 2>&1 | tee /tmp/tfplan.txt
+        continue-on-error: true   # exit 2 (changes exist) would fail the step without this
+
+      - name: Evaluate plan result
+        id: plan_check
         run: |
-          set +e
-          terraform plan -out=tfplan -no-color -input=false -detailed-exitcode 2>&1 | tee /tmp/tfplan.txt
-          TF_EXIT=${PIPESTATUS[0]}
-          # exit 0 = no changes, exit 2 = changes exist, exit 1 = error
-          echo "has_changes=$([ $TF_EXIT -eq 2 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          if [ $TF_EXIT -eq 1 ]; then exit 1; fi
-          exit 0
-        continue-on-error: true   # we post the result before failing
+          EXIT="${{ steps.plan.outputs.exitcode }}"
+          echo "Terraform plan exit code: $EXIT"
+          if [ "$EXIT" = "1" ]; then echo "Plan errored"; exit 1; fi
+          echo "has_changes=$([ "$EXIT" = "2" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
       - name: Upload plan artifact
-        if: steps.plan.outputs.has_changes == 'true'
+        if: steps.plan_check.outputs.has_changes == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
@@ -144,7 +145,7 @@ jobs:
             if (plan.length > 60000) {
               plan = plan.slice(0, 60000) + '\n\n... (truncated) ...';
             }
-            const outcome = '${{ steps.plan.outcome }}';
+            const outcome = '${{ steps.plan_check.outcome }}';
             const icon = outcome === 'success' ? '✅' : '❌';
             const body = `### ${icon} Terraform Plan — \`${{ github.head_ref }}\`
             <details><summary>Show plan</summary>
@@ -178,10 +179,6 @@ jobs:
               issue_number: context.issue.number,
               body,
             });
-
-      - name: Fail if plan failed
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
 
   # ── 3. Terraform apply — push to main only, when plan has actual changes ──────
   terraform-apply:
