@@ -67,11 +67,10 @@ jobs:
           results_format: sarif
           publish_results: false
 
-  # ── 2. Terraform plan — runs when terraform/ files changed (PR *and* push) ─
+  # ── 2. Terraform plan — always runs (drift check + real plan) ───────────────
   terraform-plan:
     name: Terraform plan
     needs: [ci, changes]
-    if: needs.changes.outputs.terraform == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -118,7 +117,7 @@ jobs:
         continue-on-error: true   # we post the result before failing
 
       - name: Upload plan artifact
-        if: steps.plan.outcome == 'success'
+        if: needs.changes.outputs.terraform == 'true' && steps.plan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
@@ -175,13 +174,14 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-  # ── 3. Terraform apply — push to main only, after successful plan ──────────
+  # ── 3. Terraform apply — push to main only, only when terraform files changed ─
   terraform-apply:
     name: Terraform apply
-    needs: [terraform-plan]
+    needs: [terraform-plan, changes]
     if: |
       github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.terraform == 'true'
     runs-on: ubuntu-latest
     environment: production
     env:
