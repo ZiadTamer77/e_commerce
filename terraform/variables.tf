@@ -130,5 +130,24 @@ variable "secret_key" {
   sensitive   = true
   default     = ""
 }
+variable "SUPERUSER_NAME" {
+  description = "Django superuser name"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
 
+variable "SUPERUSER_EMAIL" {
+  description = "Django superuser email"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "SUPERUSER_PASSWORD" {
+  description = "Django superuser password"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
 
