@@ -3,8 +3,20 @@ name: Pipeline
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'docs/**'
+      - 'LICENSE'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'docs/**'
+      - 'LICENSE'
 
 # Cancel any in-progress run for the same branch/PR so pushes don't queue up
 concurrency:
