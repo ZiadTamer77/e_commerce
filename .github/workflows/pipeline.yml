@@ -13,22 +13,7 @@ concurrency:
 
 jobs:
 
-  # ── 0. Detect which paths changed ─────────────────────────────────────────
-  changes:
-    name: Detect changes
-    runs-on: ubuntu-latest
-    outputs:
-      terraform: ${{ steps.filter.outputs.terraform }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            terraform:
-              - 'terraform/**'
-
-  # ── 1. CI — always runs on every push / PR ────────────────────────────────
+  # ── 0. CI — always runs on every push / PR ────────────────────────────────
   ci:
     name: CI (lint · test)
     runs-on: ubuntu-latest
@@ -70,7 +55,7 @@ jobs:
   # ── 2. Terraform plan — always runs (drift check + real plan) ───────────────
   terraform-plan:
     name: Terraform plan
-    needs: [ci, changes]
+    needs: [ci]
     outputs:
       has_changes: ${{ steps.plan_check.outputs.has_changes }}
     runs-on: ubuntu-latest
@@ -230,7 +215,7 @@ jobs:
   # ── 4. Deploy — push to main only, after CI + terraform (if it ran) ────────
   deploy:
     name: Deploy to ECS
-    needs: [ci, changes, terraform-apply]
+    needs: [ci,terraform-apply]
     # always() lets this job evaluate even when terraform-apply was skipped
     if: |
       always() &&
